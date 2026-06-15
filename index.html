@@ -117,7 +117,7 @@ body{font-family:'Space Grotesk',sans-serif;color:var(--text)}
 .sec-body{padding:14px 16px 16px}
 
 /* MINI CARDS GRID */
-.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px}
 .mcard{background:var(--surface2);border-radius:8px;padding:10px 12px;position:relative;min-width:0;overflow:hidden}
 .mc-lbl{font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mc-val{font-family:'Space Mono',monospace;font-size:clamp(14px,4vw,20px);font-weight:700;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -907,18 +907,18 @@ OPINION:
 [texto de la opinión]`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'mistralai/mixtral-8x7b-instruct',
         max_tokens: 1000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
 
     const data = await res.json();
-    const raw = data.content?.find(b => b.type === 'text')?.text || '';
+    const raw = data?.choices?.[0]?.message?.content || '';
 
     // Parse ANALISIS and OPINION blocks
     const analisisMatch = raw.match(/ANALISIS:\s*([\s\S]*?)(?=OPINION:|$)/i);
