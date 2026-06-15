@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#080810">
+<title>AlexisRun</title>
+<link rel="manifest" href="manifest.json">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg:#080810;--surface:#0f0f1a;--surface2:#161625;--border:#1e1e30;
+  --accent:#c8f135;--blue:#5b9fff;--warn:#ff7043;--red:#ff4444;
+  --muted:#44445a;--text:#e8e8f2;--text2:#8888a8;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'Space Grotesk',sans-serif;color:var(--text)}
+
+/* APP SHELL */
+#app{height:100%;display:flex;flex-direction:column}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;display:none;flex-direction:column}
+.screen.active{display:flex}
+
+/* TOPBAR */
+.topbar{
+  padding:calc(var(--safe-top) + 14px) 20px 14px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;flex-shrink:0;
+}
+.topbar-title{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--accent)}
+.topbar-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.topbar-action{font-size:11px;color:var(--text2);padding:6px 10px;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:none;color:var(--text2);font-family:'Space Grotesk',sans-serif}
+.topbar-action:active{background:var(--surface2)}
+.back-btn{font-size:20px;cursor:pointer;padding:4px 8px 4px 0;color:var(--text2);background:none;border:none;line-height:1}
+
+/* LOGIN SCREEN */
+#screen-login{align-items:center;justify-content:center;padding:40px 32px;gap:0}
+.login-logo{font-family:'Space Mono',monospace;font-size:36px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.login-tag{font-size:13px;color:var(--text2);margin-bottom:60px;text-align:center;line-height:1.5}
+.login-btn{
+  width:100%;padding:18px 24px;
+  background:var(--accent);color:#0a0a0a;
+  border:none;border-radius:12px;
+  font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;letter-spacing:.02em;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  transition:opacity .15s;
+}
+.login-btn:active{opacity:.85}
+.strava-icon{width:22px;height:22px}
+.login-note{font-size:11px;color:var(--muted);margin-top:20px;text-align:center;line-height:1.6}
+
+/* ACTIVITY LIST */
+#screen-list{flex-direction:column}
+.list-wrap{flex:1;padding:16px;display:flex;flex-direction:column;gap:10px}
+.activity-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:16px 18px;cursor:pointer;transition:border-color .15s,background .15s;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+}
+.activity-card:active{background:var(--surface2);border-color:#2a2a40}
+.ac-left{flex:1;min-width:0}
+.ac-name{font-size:14px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-date{font-size:11px;color:var(--text2);margin-bottom:10px}
+.ac-stats{display:flex;gap:14px;flex-wrap:wrap}
+.ac-stat{display:flex;flex-direction:column;gap:1px}
+.ac-stat-val{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)}
+.ac-stat-lbl{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.ac-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.ac-type{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:3px;background:rgba(200,241,53,.1);color:var(--accent)}
+.ac-arrow{font-size:18px;color:var(--muted)}
+
+/* LOADING */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:40px}
+.spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:'Space Mono',monospace;font-size:11px;color:var(--text2);letter-spacing:.12em;text-align:center}
+
+/* EMPTY / ERROR */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:12px;text-align:center}
+.empty-ico{font-size:40px;opacity:.4}
+.empty-title{font-size:15px;font-weight:600;color:var(--text2)}
+.empty-sub{font-size:12px;color:var(--muted);line-height:1.6}
+.retry-btn{margin-top:8px;padding:10px 20px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:'Space Grotesk',sans-serif;font-size:13px;cursor:pointer}
+
+/* ANALYSIS SCREEN */
+#screen-analysis{flex-direction:column}
+.analysis-scroll{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+
+/* HERO CARD */
+.hero-card{
+  background:linear-gradient(145deg,#0e0e1e,#0a0a14);
+  border:1px solid var(--border);border-radius:14px;
+  padding:22px 20px;position:relative;overflow:hidden;
+}
+.hero-card::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(200,241,53,.07) 0%,transparent 70%);pointer-events:none}
+.hero-eyebrow{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px}
+.hero-name{font-size:22px;font-weight:700;line-height:1.1;margin-bottom:4px}
+.hero-date{font-size:12px;color:var(--text2);margin-bottom:20px}
+.hero-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.hkpi-val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1}
+.hkpi-lbl{font-size:9px;color:var(--text2);letter-spacing:.1em;text-transform:uppercase;margin-top:3px;display:block}
+
+/* SECTION CARDS */
+.sec-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.sec-header{padding:14px 16px 0;display:flex;align-items:center;gap:10px}
+.sec-num{font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);border:1px solid rgba(200,241,53,.35);padding:2px 6px;border-radius:2px;letter-spacing:.12em;flex-shrink:0}
+.sec-title{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text2)}
+.sec-body{padding:14px 16px 16px}
+
+/* MINI CARDS GRID */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.mcard{background:var(--surface2);border-radius:8px;padding:12px 14px;position:relative}
+.mc-lbl{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:6px}
+.mc-val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;line-height:1}
+.mc-val.g{color:var(--accent)}.mc-val.b{color:var(--blue)}.mc-val.w{color:var(--warn)}.mc-val.r{color:var(--red)}
+.mc-sub{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.3}
+.mc-badge{position:absolute;top:8px;right:8px;font-size:8px;font-weight:700;padding:2px 5px;border-radius:2px;text-transform:uppercase}
+.mcbg{background:rgba(200,241,53,.12);color:var(--accent)}
+
+/* KM TABLE - mobile optimized */
+.km-table{width:100%;border-collapse:collapse;margin-top:12px}
+.km-table th{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 6px;border-bottom:1px solid var(--border);font-weight:400}
+.km-table td{padding:9px 6px;font-size:12px;border-bottom:1px solid #0f0f18;vertical-align:middle}
+.km-table tr:last-child td{border-bottom:none}
+.km-table tr:active td{background:#0c0c16}
+.kn{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);font-weight:700}
+.kp{font-family:'Space Mono',monospace;font-size:13px;font-weight:700}
+.kf{font-family:'Space Mono',monospace;font-size:11px}
+.delta{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:2px 5px;border-radius:3px}
+.dp{color:var(--warn);background:rgba(255,112,67,.1)}.dn{color:var(--accent);background:rgba(200,241,53,.1)}.d0{color:var(--muted)}
+.chip{display:inline-block;font-size:8px;font-weight:700;letter-spacing:.06em;padding:2px 6px;border-radius:3px;text-transform:uppercase;white-space:nowrap}
+.cg{background:rgba(200,241,53,.12);color:var(--accent)}
+.cb{background:rgba(91,159,255,.12);color:var(--blue)}
+.cw{background:rgba(255,112,67,.15);color:var(--warn)}
+.cm{background:#1a1a28;color:var(--text2)}
+
+/* BAR ROWS */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.brl{font-family:'Space Mono',monospace;font-size:10px;color:var(--text2);width:30px;text-align:right;flex-shrink:0}
+.brtrack{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.brfill{height:100%;border-radius:3px;width:0%;transition:width .6s cubic-bezier(.16,1,.3,1)}
+.fa{background:var(--accent)}.fb{background:var(--blue)}.fw{background:var(--warn)}
+.brv{font-family:'Space Mono',monospace;font-size:10px;color:var(--text2);width:54px;flex-shrink:0;text-align:right}
+
+/* INSIGHT */
+.ins{background:var(--surface2);border-left:2px solid var(--accent);border-radius:0 6px 6px 0;padding:12px 14px;margin-top:12px}
+.ins.b{border-left-color:var(--blue)}.ins.w{border-left-color:var(--warn)}
+.ins-t{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+.ins.b .ins-t{color:var(--blue)}.ins.w .ins-t{color:var(--warn)}
+.ins p{font-size:12px;color:var(--text2);line-height:1.65}
+.ins p strong{color:var(--text);font-weight:600}
+
+/* RECOVERY */
+.rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.rec-item{background:var(--surface2);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
+.rec-ico{font-size:18px;flex-shrink:0;line-height:1;margin-top:1px}
+.rec-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:3px}
+.rec-val{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;margin-bottom:2px}
+.rec-note{font-size:10px;color:var(--muted);line-height:1.4}
+
+/* BOTTOM SAFE AREA */
+.bottom-pad{height:calc(var(--safe-bot) + 16px);flex-shrink:0}
+
+/* INSTALL BANNER */
+#install-banner{
+  display:none;
+  position:fixed;bottom:calc(var(--safe-bot) + 16px);left:16px;right:16px;
+  background:var(--surface);border:1px solid var(--accent);border-radius:12px;
+  padding:14px 16px;z-index:200;
+  flex-direction:row;align-items:center;gap:12px;
+}
+#install-banner.show{display:flex}
+.install-text{flex:1;font-size:12px;color:var(--text2);line-height:1.4}
+.install-text strong{color:var(--text);display:block;margin-bottom:2px}
+.install-btn{background:var(--accent);color:#0a0a0a;border:none;border-radius:8px;padding:10px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.install-close{font-size:18px;color:var(--muted);cursor:pointer;padding:4px;background:none;border:none;line-height:1}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sec-card,.hero-card{animation:fadeIn .3s ease both}
+.sec-card:nth-child(2){animation-delay:.05s}.sec-card:nth-child(3){animation-delay:.1s}
+.sec-card:nth-child(4){animation-delay:.15s}.sec-card:nth-child(5){animation-delay:.2s}
+.sec-card:nth-child(6){animation-delay:.25s}.sec-card:nth-child(7){animation-delay:.3s}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ═══════════════════════════ LOGIN ═══════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-logo">AR/</div>
+  <p class="login-sub" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.15em;margin-bottom:8px">ALEXISRUN · ANÁLISIS</p>
+  <p class="login-tag">Conectá tu cuenta de Strava y analizá cada carrera con precisión.</p>
+  <button class="login-btn" onclick="stravaLogin()">
+    <svg class="strava-icon" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+    Conectar con Strava
+  </button>
+  <p class="login-note">Solo lectura. Nunca escribimos en tu cuenta.<br>Tus datos no salen de tu teléfono.</p>
+</div>
+
+<!-- ═══════════════════════════ ACTIVITY LIST ═══════════════════════════ -->
+<div id="screen-list" class="screen">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">AR/ ACTIVIDADES</div>
+      <div class="topbar-sub" id="athlete-name">Cargando...</div>
+    </div>
+    <button class="topbar-action" onclick="logout()">Salir</button>
+  </div>
+  <div id="list-content" class="list-wrap"></div>
+  <div class="bottom-pad"></div>
+</div>
+
+<!-- ═══════════════════════════ ANALYSIS ═══════════════════════════ -->
+<div id="screen-analysis" class="screen">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="back-btn" onclick="showScreen('list')">←</button>
+      <div>
+        <div class="topbar-title">ANÁLISIS</div>
+        <div class="topbar-sub" id="analysis-subtitle">Cargando...</div>
+      </div>
+    </div>
+    <button class="topbar-action" onclick="shareAnalysis()">↑ Compartir</button>
+  </div>
+  <div class="analysis-scroll" id="analysis-content"></div>
+</div>
+
+</div><!-- /app -->
+
+<!-- INSTALL BANNER -->
+<div id="install-banner">
+  <div class="install-text"><strong>Instalá la app</strong>Agregala a tu pantalla de inicio para usarla sin navegador</div>
+  <button class="install-btn" id="install-btn-action">Instalar</button>
+  <button class="install-close" onclick="closeBanner()">×</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════
+const CLIENT_ID = '258113';
+const CLIENT_SECRET = 'be70c357d2ea8bd9418e281d03d0b18f794221d0';
+const REDIRECT_URI = window.location.origin + window.location.pathname;
+const SCOPES = 'read,activity:read_all';
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+function $(id){ return document.getElementById(id) }
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $('screen-' + name).classList.add('active');
+}
+
+function fmtPace(ms) {
+  // ms = meters per second -> min:sec/km
+  if (!ms || ms === 0) return '--:--';
+  const secPerKm = 1000 / ms;
+  const m = Math.floor(secPerKm / 60);
+  const s = Math.floor(secPerKm % 60);
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+function fmtTime(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = Math.floor(secs % 60);
+  if (h > 0) return `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+function fmtDist(m) {
+  return (m / 1000).toFixed(2) + ' km';
+}
+
+function fmtDate(str) {
+  const d = new Date(str);
+  return d.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+function fmtDateShort(str) {
+  const d = new Date(str);
+  return d.toLocaleDateString('es-AR', { day:'numeric', month:'short', year:'numeric' });
+}
+
+function loading(containerId, msg = 'Cargando...') {
+  $(containerId).innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">${msg}</div></div>`;
+}
+
+function empty(containerId, icon, title, sub, retryFn) {
+  $(containerId).innerHTML = `
+    <div class="empty">
+      <div class="empty-ico">${icon}</div>
+      <div class="empty-title">${title}</div>
+      <div class="empty-sub">${sub}</div>
+      ${retryFn ? `<button class="retry-btn" onclick="${retryFn}()">Reintentar</button>` : ''}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════
+let accessToken = localStorage.getItem('ar_token');
+let athleteData = JSON.parse(localStorage.getItem('ar_athlete') || 'null');
+
+function stravaLogin() {
+  const url = `https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${SCOPES}`;
+  window.location.href = url;
+}
+
+async function handleOAuthCallback(code) {
+  loading('list-content', 'Conectando con Strava...');
+  showScreen('list');
+  try {
+    const res = await fetch('https://www.strava.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        code,
+        grant_type: 'authorization_code'
+      })
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      accessToken = data.access_token;
+      athleteData = data.athlete;
+      localStorage.setItem('ar_token', accessToken);
+      localStorage.setItem('ar_athlete', JSON.stringify(athleteData));
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+      loadActivities();
+    } else {
+      throw new Error(data.message || 'Error de autenticación');
+    }
+  } catch(e) {
+    empty('list-content', '⚠️', 'Error de conexión', e.message, 'loadActivities');
+  }
+}
+
+function logout() {
+  localStorage.removeItem('ar_token');
+  localStorage.removeItem('ar_athlete');
+  accessToken = null;
+  athleteData = null;
+  showScreen('login');
+}
+
+// ═══════════════════════════════════════════════════════
+// ACTIVITIES
+// ═══════════════════════════════════════════════════════
+async function loadActivities() {
+  showScreen('list');
+  if (athleteData) {
+    $('athlete-name').textContent = `${athleteData.firstname} ${athleteData.lastname}`;
+  }
+  loading('list-content', 'Buscando actividades...');
+  try {
+    const res = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=30', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (res.status === 401) { logout(); return; }
+    const acts = await res.json();
+    const runs = acts.filter(a => a.type === 'Run' || a.sport_type === 'Run');
+    if (!runs.length) {
+      empty('list-content', '🏃', 'Sin carreras', 'No encontramos carreras recientes en tu cuenta de Strava.', null);
+      return;
+    }
+    renderActivities(runs);
+  } catch(e) {
+    empty('list-content', '📡', 'Sin conexión', 'Verificá tu conexión a internet e intentá de nuevo.', 'loadActivities');
+  }
+}
+
+function renderActivities(runs) {
+  const wrap = $('list-content');
+  wrap.innerHTML = '';
+  runs.forEach(run => {
+    const card = document.createElement('div');
+    card.className = 'activity-card';
+    const paceStr = fmtPace(run.average_speed);
+    card.innerHTML = `
+      <div class="ac-left">
+        <div class="ac-name">${run.name}</div>
+        <div class="ac-date">${fmtDateShort(run.start_date_local)}</div>
+        <div class="ac-stats">
+          <div class="ac-stat"><span class="ac-stat-val">${fmtDist(run.distance)}</span><span class="ac-stat-lbl">Distancia</span></div>
+          <div class="ac-stat"><span class="ac-stat-val">${fmtTime(run.elapsed_time)}</span><span class="ac-stat-lbl">Tiempo</span></div>
+          <div class="ac-stat"><span class="ac-stat-val">${paceStr}</span><span class="ac-stat-lbl">Ritmo/km</span></div>
+        </div>
+      </div>
+      <div class="ac-right">
+        <span class="ac-type">${(run.distance/1000).toFixed(0)}K</span>
+        <span class="ac-arrow">›</span>
+      </div>`;
+    card.onclick = () => loadAnalysis(run.id, run.name);
+    wrap.appendChild(card);
+  });
+  const pad = document.createElement('div');
+  pad.className = 'bottom-pad';
+  wrap.appendChild(pad);
+}
+
+// ═══════════════════════════════════════════════════════
+// ANALYSIS
+// ═══════════════════════════════════════════════════════
+let currentActivityData = null;
+
+async function loadAnalysis(activityId, activityName) {
+  showScreen('analysis');
+  $('analysis-subtitle').textContent = activityName;
+  loading('analysis-content', 'Extrayendo datos de Strava...');
+
+  try {
+    // Fetch activity detail + streams in parallel
+    const [actRes, streamsRes] = await Promise.all([
+      fetch(`https://www.strava.com/api/v3/activities/${activityId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      }),
+      fetch(`https://www.strava.com/api/v3/activities/${activityId}/streams?keys=velocity_smooth,cadence,watts,altitude,distance,heartrate,time&key_by_type=true`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      })
+    ]);
+
+    if (actRes.status === 401) { logout(); return; }
+    const [act, streams] = await Promise.all([actRes.json(), streamsRes.json()]);
+
+    currentActivityData = { act, streams };
+    renderAnalysis(act, streams);
+  } catch(e) {
+    empty('analysis-content', '⚠️', 'Error al cargar', 'No se pudieron obtener los datos. ' + e.message, null);
+  }
+}
+
+function computeKmLaps(streams) {
+  const dist = streams.distance?.data || [];
+  const vel  = streams.velocity_smooth?.data || [];
+  const cad  = streams.cadence?.data || [];
+  const wat  = streams.watts?.data || [];
+  const alt  = streams.altitude?.data || [];
+  const hr   = streams.heartrate?.data || [];
+  const time = streams.time?.data || [];
+
+  const laps = [];
+  let kmStart = 0;
+  let currentKm = 1;
+
+  for (let i = 1; i < dist.length; i++) {
+    if (dist[i] >= currentKm * 1000) {
+      const slice = { vel:[], cad:[], wat:[], alt:[], hr:[], time:[] };
+      for (let j = kmStart; j <= i; j++) {
+        if (vel[j] > 0) slice.vel.push(vel[j]);
+        if (cad[j] > 0) slice.cad.push(cad[j]);
+        if (wat[j] > 0) slice.wat.push(wat[j]);
+        slice.alt.push(alt[j] || 0);
+        if (hr[j] > 0) slice.hr.push(hr[j]);
+      }
+      const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+      const max = arr => arr.length ? Math.max(...arr) : 0;
+      const altGain = Math.max(0, (alt[i]||0) - (alt[kmStart]||0));
+      const lapTime = time[i] - time[kmStart];
+      const lapDist = dist[i] - dist[kmStart];
+      const pace = lapDist > 0 ? lapTime / (lapDist/1000) : 0;
+
+      laps.push({
+        km: currentKm,
+        paceStr: fmtPaceFromSecs(pace),
+        paceSecs: pace,
+        avgHr: Math.round(avg(slice.hr)),
+        maxHr: Math.round(max(slice.hr)),
+        avgCad: avg(slice.cad).toFixed(1),
+        avgWatts: Math.round(avg(slice.wat)),
+        elevGain: altGain.toFixed(1),
+        lapTime,
+        lapDist
+      });
+      kmStart = i;
+      currentKm++;
+      if (currentKm > 42) break; // safety
+    }
+  }
+  return laps;
+}
+
+function fmtPaceFromSecs(s) {
+  if (!s || s <= 0) return '--:--';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+function getChip(km, laps) {
+  if (!laps.length) return '';
+  const paces = laps.map(l=>l.paceSecs).filter(p=>p>0);
+  const minPace = Math.min(...paces);
+  const maxPace = Math.max(...paces);
+  const l = laps[km-1];
+  if (!l) return '';
+  if (l.paceSecs === minPace) return '<span class="chip cg">Mejor km</span>';
+  if (l.paceSecs === maxPace) return '<span class="chip cw">Peor km</span>';
+  if (km === 1) return '<span class="chip cb">Arranque</span>';
+  if (km === laps.length) return '<span class="chip cg">🚀 Final</span>';
+  if (l.avgHr && l.avgHr === Math.max(...laps.map(x=>x.avgHr))) return '<span class="chip cw">FC máx</span>';
+  return '<span class="chip cm">Estable</span>';
+}
+
+function renderAnalysis(act, streams) {
+  const laps = computeKmLaps(streams);
+  const avgPace = act.average_speed ? fmtPace(act.average_speed) : '--:--';
+  const maxSpeed = act.max_speed ? (act.max_speed).toFixed(2) : '--';
+  const hasHr = streams.heartrate?.data?.length > 0;
+  const hasWatts = streams.watts?.data?.length > 0;
+  const hasCad = streams.cadence?.data?.length > 0;
+
+  // Avg FC
+  const hrData = streams.heartrate?.data?.filter(h=>h>0) || [];
+  const avgHr = hrData.length ? Math.round(hrData.reduce((a,b)=>a+b)/hrData.length) : null;
+  const maxHr = hrData.length ? Math.max(...hrData) : null;
+  const avgCadData = streams.cadence?.data?.filter(c=>c>0) || [];
+  const avgCad = avgCadData.length ? (avgCadData.reduce((a,b)=>a+b)/avgCadData.length).toFixed(1) : null;
+  const wattsData = streams.watts?.data?.filter(w=>w>0) || [];
+  const avgWatts = wattsData.length ? Math.round(wattsData.reduce((a,b)=>a+b)/wattsData.length) : null;
+
+  // Avg pace in secs
+  const avgPaceSecs = act.average_speed ? 1000/act.average_speed : 0;
+
+  const content = $('analysis-content');
+  content.innerHTML = '';
+
+  // ── HERO ──
+  const hero = document.createElement('div');
+  hero.className = 'hero-card';
+  hero.innerHTML = `
+    <div class="hero-eyebrow">Análisis · Strava #${act.id}</div>
+    <div class="hero-name">${act.name}</div>
+    <div class="hero-date">${fmtDate(act.start_date_local)}</div>
+    <div class="hero-kpis">
+      <div><span class="hkpi-val">${fmtTime(act.elapsed_time)}</span><span class="hkpi-lbl">Tiempo</span></div>
+      <div><span class="hkpi-val">${avgPace}/km</span><span class="hkpi-lbl">Ritmo avg</span></div>
+      <div><span class="hkpi-val">${fmtDist(act.distance)}</span><span class="hkpi-lbl">Distancia</span></div>
+    </div>`;
+  content.appendChild(hero);
+
+  // ── 01 MÉTRICAS ──
+  const sec1 = document.createElement('div');
+  sec1.className = 'sec-card';
+  sec1.innerHTML = `
+    <div class="sec-header"><span class="sec-num">01</span><span class="sec-title">Métricas clave</span></div>
+    <div class="sec-body">
+      <div class="mgrid">
+        <div class="mcard"><div class="mc-lbl">Velocidad pico</div><div class="mc-val b">${maxSpeed}<span style="font-size:11px;color:var(--text2)"> m/s</span></div><div class="mc-sub">≈ ${fmtPace(act.max_speed)}/km</div></div>
+        <div class="mcard"><div class="mc-lbl">Desnivel</div><div class="mc-val w">${act.total_elevation_gain || 0}<span style="font-size:11px;color:var(--text2)"> m</span></div><div class="mc-sub">Acumulado total</div></div>
+        ${avgHr ? `<div class="mcard"><div class="mc-lbl">FC promedio</div><div class="mc-val w">${avgHr}<span style="font-size:11px;color:var(--text2)"> bpm</span></div></div>` : ''}
+        ${maxHr ? `<div class="mcard"><div class="mc-lbl">FC máxima</div><div class="mc-val r">${maxHr}<span style="font-size:11px;color:var(--text2)"> bpm</span></div></div>` : ''}
+        ${avgCad ? `<div class="mcard"><div class="mc-lbl">Cadencia avg</div><div class="mc-val">${avgCad}<span style="font-size:11px;color:var(--text2)"> spm</span></div></div>` : ''}
+        ${avgWatts ? `<div class="mcard"><div class="mc-lbl">Potencia avg</div><div class="mc-val">${avgWatts}<span style="font-size:11px;color:var(--text2)"> W</span></div></div>` : ''}
+        <div class="mcard"><div class="mc-lbl">Calorías</div><div class="mc-val">${act.calories || '--'}<span style="font-size:11px;color:var(--text2)"> kcal</span></div></div>
+        <div class="mcard"><div class="mc-lbl">Mejor esfuerzo</div><div class="mc-val g">${act.achievement_count || 0}<span style="font-size:11px;color:var(--text2)"> logros</span></div></div>
+      </div>
+    </div>`;
+  content.appendChild(sec1);
+
+  // ── 02 PACING POR KM ──
+  if (laps.length > 0) {
+    const sec2 = document.createElement('div');
+    sec2.className = 'sec-card';
+    const colsHr = hasHr ? '<th>FC</th>' : '';
+    const colsW = hasWatts ? '<th>W</th>' : '';
+    let rows = '';
+    laps.forEach(l => {
+      const delta = l.paceSecs - avgPaceSecs;
+      const deltaStr = Math.abs(delta) < 2 ? '<span class="delta d0">~0s</span>' :
+        delta > 0 ? `<span class="delta dp">+${Math.round(delta)}s</span>` :
+        `<span class="delta dn">${Math.round(delta)}s</span>`;
+      const hrCol = hasHr ? `<td class="kf" style="color:${l.avgHr>190?'#ff7043':l.avgHr>180?'#ffaa65':'var(--text2)'}">${l.avgHr||'--'}</td>` : '';
+      const wCol = hasWatts ? `<td class="kf">${l.avgWatts||'--'}</td>` : '';
+      const chip = getChip(l.km, laps);
+      rows += `<tr>
+        <td class="kn">${String(l.km).padStart(2,'0')}</td>
+        <td class="kp" style="${l.paceSecs===Math.min(...laps.map(x=>x.paceSecs))?'color:var(--accent)':''}">${l.paceStr}/km</td>
+        ${hrCol}${wCol}
+        <td>${deltaStr}</td>
+        <td>${chip}</td>
+      </tr>`;
+    });
+    sec2.innerHTML = `
+      <div class="sec-header"><span class="sec-num">02</span><span class="sec-title">Ritmo por km</span></div>
+      <div class="sec-body" style="padding-left:0;padding-right:0;overflow-x:auto">
+        <table class="km-table" style="min-width:320px">
+          <thead><tr><th>KM</th><th>Ritmo</th>${colsHr}${colsW}<th>Δ</th><th>Estado</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+    // Insight
+    const fastKm = laps.reduce((a,b)=>a.paceSecs<b.paceSecs?a:b);
+    const slowKm = laps.reduce((a,b)=>a.paceSecs>b.paceSecs?a:b);
+    const lastKm = laps[laps.length-1];
+    const negative = lastKm.paceSecs < (laps[0]?.paceSecs || 999);
+    sec2.querySelector('.sec-body').insertAdjacentHTML('beforeend',`
+      <div class="ins" style="margin:0 16px 4px">
+        <div class="ins-t">Patrón de carrera</div>
+        <p>Km más rápido: <strong>km ${fastKm.km} (${fastKm.paceStr}/km)</strong>. Km más lento: <strong>km ${slowKm.km} (${slowKm.paceStr}/km)</strong>. ${negative ? '✅ <strong>Negative split</strong> — cerraste más rápido de lo que arrancaste.' : lastKm.paceStr === fastKm.paceStr ? '🚀 <strong>Sprint final</strong> detectado.' : '⚠️ <strong>Positive split</strong> — la segunda mitad fue más lenta.'}</p>
+      </div>`);
+    content.appendChild(sec2);
+
+    // ── 03 RITMO VISUAL ──
+    const paces = laps.map(l=>l.paceSecs).filter(p=>p>0);
+    const minP = Math.min(...paces), maxP = Math.max(...paces);
+    const sec3 = document.createElement('div');
+    sec3.className = 'sec-card';
+    let bars = '';
+    laps.forEach(l => {
+      const pct = maxP === minP ? 80 : Math.max(8, ((maxP - l.paceSecs)/(maxP - minP))*100);
+      const isMin = l.paceSecs === minP, isMax = l.paceSecs === maxP;
+      const cls = isMin ? 'fa' : isMax ? 'fw' : 'fb';
+      const col = isMin ? 'color:var(--accent)' : isMax ? 'color:var(--warn)' : '';
+      bars += `<div class="bar-row">
+        <span class="brl">km ${l.km}</span>
+        <div class="brtrack"><div class="brfill ${cls}" style="width:0%" data-pct="${pct}"></div></div>
+        <span class="brv" style="${col}">${l.paceStr}</span>
+      </div>`;
+    });
+    sec3.innerHTML = `
+      <div class="sec-header"><span class="sec-num">03</span><span class="sec-title">Distribución de ritmo</span></div>
+      <div class="sec-body">${bars}</div>`;
+    content.appendChild(sec3);
+
+    // ── 04 FC (if available) ──
+    if (hasHr && laps.some(l=>l.avgHr>0)) {
+      const hrLaps = laps.filter(l=>l.avgHr>0);
+      const maxH = Math.max(...hrLaps.map(l=>l.avgHr));
+      const minH = Math.min(...hrLaps.map(l=>l.avgHr));
+      const sec4 = document.createElement('div');
+      sec4.className = 'sec-card';
+      let hbars = '';
+      laps.forEach(l => {
+        if (!l.avgHr) return;
+        const pct = maxH === minH ? 70 : Math.max(8,((l.avgHr-minH+10)/(maxH-minH+10))*100);
+        const high = l.avgHr > 190;
+        hbars += `<div class="bar-row">
+          <span class="brl">km ${l.km}</span>
+          <div class="brtrack"><div class="brfill ${high?'fw':'fb'}" style="width:0%" data-pct="${pct}"></div></div>
+          <span class="brv" style="${high?'color:var(--warn)':''}">${l.avgHr} bpm</span>
+        </div>`;
+      });
+      sec4.innerHTML = `
+        <div class="sec-header"><span class="sec-num">04</span><span class="sec-title">Frecuencia cardíaca</span></div>
+        <div class="sec-body">
+          ${hbars}
+          <div class="ins b">
+            <div class="ins-t">Comportamiento cardíaco</div>
+            <p>FC promedio <strong>${avgHr} bpm</strong> · Máxima <strong>${maxHr} bpm</strong> en km ${laps.find(l=>l.maxHr===maxHr)?.km||'--'}. ${maxHr>195?'⚠️ Esfuerzo muy intenso — zona 5.':'✅ FC dentro de rangos de carrera competitiva.'}</p>
+          </div>
+        </div>`;
+      content.appendChild(sec4);
+    }
+
+    // ── 05 POTENCIA (if available) ──
+    if (hasWatts && laps.some(l=>l.avgWatts>0)) {
+      const wLaps = laps.filter(l=>l.avgWatts>0);
+      const maxW = Math.max(...wLaps.map(l=>l.avgWatts));
+      const minW = Math.min(...wLaps.map(l=>l.avgWatts));
+      const sec5 = document.createElement('div');
+      sec5.className = 'sec-card';
+      let wbars = '';
+      laps.forEach(l => {
+        if (!l.avgWatts) return;
+        const pct = maxW===minW?70:Math.max(8,((l.avgWatts-minW)/(maxW-minW))*100+20);
+        wbars += `<div class="bar-row">
+          <span class="brl">km ${l.km}</span>
+          <div class="brtrack"><div class="brfill fa" style="width:0%" data-pct="${pct}"></div></div>
+          <span class="brv">${l.avgWatts} W</span>
+        </div>`;
+      });
+      sec5.innerHTML = `
+        <div class="sec-header"><span class="sec-num">05</span><span class="sec-title">Potencia por km</span></div>
+        <div class="sec-body">
+          ${wbars}
+          <div class="ins">
+            <div class="ins-t">Análisis de potencia</div>
+            <p>Promedio <strong>${avgWatts}W</strong>. Pico en km ${laps.find(l=>l.avgWatts===maxW)?.km||'--'} con <strong>${maxW}W</strong>. ${laps.find(l=>l.avgWatts===maxW)?.elevGain>3?'Coincide con tramo de subida — esperado.':'Explosión de velocidad en tramo llano.'}</p>
+          </div>
+        </div>`;
+      content.appendChild(sec5);
+    }
+
+    // ── 06 CADENCIA (if available) ──
+    if (hasCad && laps.some(l=>parseFloat(l.avgCad)>0)) {
+      const sec6 = document.createElement('div');
+      sec6.className = 'sec-card';
+      const cadVals = laps.map(l=>parseFloat(l.avgCad)).filter(c=>c>0);
+      const maxC = Math.max(...cadVals), minC = Math.min(...cadVals);
+      let cbars = '';
+      laps.forEach(l => {
+        const c = parseFloat(l.avgCad);
+        if (!c) return;
+        const pct = maxC===minC?75:Math.max(8,((c-minC)/(maxC-minC))*60+30);
+        cbars += `<div class="bar-row">
+          <span class="brl">km ${l.km}</span>
+          <div class="brtrack"><div class="brfill fb" style="width:0%" data-pct="${pct}"></div></div>
+          <span class="brv">${l.avgCad} spm</span>
+        </div>`;
+      });
+      const range = (maxC-minC).toFixed(1);
+      sec6.innerHTML = `
+        <div class="sec-header"><span class="sec-num">06</span><span class="sec-title">Cadencia por km</span></div>
+        <div class="sec-body">
+          ${cbars}
+          <div class="ins b">
+            <div class="ins-t">Economía de técnica</div>
+            <p>Rango total de <strong>${range} spm</strong>. ${parseFloat(range)<3?'✅ Cadencia extraordinariamente estable — técnica consolidada.':parseFloat(range)<6?'✅ Buena consistencia técnica a lo largo de la carrera.':'⚠️ Variación notable — posible fatiga neuromuscular o cambios de terreno.'}</p>
+          </div>
+        </div>`;
+      content.appendChild(sec6);
+    }
+
+    // ── 07 PROYECCIONES ──
+    const totalTime = act.elapsed_time;
+    const distKm = act.distance / 1000;
+    function riegel(d2) {
+      const t2 = totalTime * Math.pow(d2/distKm, 1.06);
+      return fmtTime(Math.round(t2));
+    }
+    const sec7 = document.createElement('div');
+    sec7.className = 'sec-card';
+    sec7.innerHTML = `
+      <div class="sec-header"><span class="sec-num">07</span><span class="sec-title">Proyecciones</span></div>
+      <div class="sec-body">
+        <div class="mgrid">
+          ${distKm < 5 ? `<div class="mcard"><div class="mc-lbl">5 km proyec.</div><div class="mc-val g">${riegel(5)}</div></div>` : ''}
+          ${distKm < 10 ? `<div class="mcard"><div class="mc-lbl">10 km proyec.</div><div class="mc-val g">${riegel(10)}</div></div>` : ''}
+          ${distKm < 21.1 ? `<div class="mcard"><div class="mc-lbl">21.1 km proyec.</div><div class="mc-val b">${riegel(21.1)}</div></div>` : ''}
+          ${distKm < 42.2 ? `<div class="mcard"><div class="mc-lbl">42.2 km proyec.</div><div class="mc-val b">${riegel(42.2)}</div></div>` : ''}
+          <div class="mcard"><div class="mc-lbl">Ritmo objetivo</div><div class="mc-val g">${avgPace}/km</div><div class="mc-sub">Basado en esta carrera</div></div>
+          <div class="mcard"><div class="mc-lbl">Distancia cubierta</div><div class="mc-val">${fmtDist(act.distance)}</div></div>
+        </div>
+        <div class="ins w">
+          <div class="ins-t">Fórmula de Riegel</div>
+          <p>Las proyecciones usan la fórmula de Riegel (t₂ = t₁ × (d₂/d₁)^1.06). Son estimaciones basadas en tu rendimiento actual sin considerar condiciones del día.</p>
+        </div>
+      </div>`;
+    content.appendChild(sec7);
+  } else {
+    // No lap data
+    const noLaps = document.createElement('div');
+    noLaps.className = 'sec-card';
+    noLaps.innerHTML = `
+      <div class="sec-header"><span class="sec-num">02</span><span class="sec-title">Datos de segmento</span></div>
+      <div class="sec-body">
+        <div class="empty" style="padding:20px 0">
+          <div class="empty-ico">📊</div>
+          <div class="empty-title">Sin datos de stream</div>
+          <div class="empty-sub">Esta actividad no tiene datos GPS/velocidad detallados disponibles en Strava.</div>
+        </div>
+      </div>`;
+    content.appendChild(noLaps);
+  }
+
+  // Bottom pad
+  const pad = document.createElement('div');
+  pad.className = 'bottom-pad';
+  content.appendChild(pad);
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.brfill[data-pct]').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  }, 200);
+}
+
+// ═══════════════════════════════════════════════════════
+// SHARE
+// ═══════════════════════════════════════════════════════
+function shareAnalysis() {
+  if (!currentActivityData) return;
+  const act = currentActivityData.act;
+  const text = `🏃 ${act.name}\n⏱ ${fmtTime(act.elapsed_time)} | ${fmtPace(act.average_speed)}/km | ${fmtDist(act.distance)}\n\nAnálisis completo via AlexisRun @alexisrun1`;
+  if (navigator.share) {
+    navigator.share({ title: act.name, text });
+  } else {
+    navigator.clipboard?.writeText(text);
+    alert('Copiado al portapapeles');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// PWA INSTALL
+// ═══════════════════════════════════════════════════════
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!localStorage.getItem('ar_install_dismissed')) {
+    $('install-banner').classList.add('show');
+  }
+});
+$('install-btn-action').onclick = async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') $('install-banner').classList.remove('show');
+    deferredPrompt = null;
+  }
+};
+function closeBanner() {
+  $('install-banner').classList.remove('show');
+  localStorage.setItem('ar_install_dismissed', '1');
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+// Service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// OAuth callback
+const params = new URLSearchParams(window.location.search);
+const code = params.get('code');
+
+if (code) {
+  handleOAuthCallback(code);
+} else if (accessToken) {
+  loadActivities();
+} else {
+  showScreen('login');
+}
+</script>
+</body>
+</html>
