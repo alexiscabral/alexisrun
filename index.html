@@ -106,7 +106,7 @@ body{font-family:'Space Grotesk',sans-serif;color:var(--text)}
 .hero-name{font-size:22px;font-weight:700;line-height:1.1;margin-bottom:4px}
 .hero-date{font-size:12px;color:var(--text2);margin-bottom:20px}
 .hero-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.hkpi-val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--accent);display:block;line-height:1}
+.hkpi-val{font-family:'Space Mono',monospace;font-size:clamp(14px,4.5vw,20px);font-weight:700;color:var(--accent);display:block;line-height:1}
 .hkpi-lbl{font-size:9px;color:var(--text2);letter-spacing:.1em;text-transform:uppercase;margin-top:3px;display:block}
 
 /* SECTION CARDS */
@@ -118,12 +118,12 @@ body{font-family:'Space Grotesk',sans-serif;color:var(--text)}
 
 /* MINI CARDS GRID */
 .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.mcard{background:var(--surface2);border-radius:8px;padding:12px 14px;position:relative}
-.mc-lbl{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:6px}
-.mc-val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;line-height:1}
+.mcard{background:var(--surface2);border-radius:8px;padding:10px 12px;position:relative;min-width:0;overflow:hidden}
+.mc-lbl{font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-val{font-family:'Space Mono',monospace;font-size:clamp(14px,4vw,20px);font-weight:700;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mc-val.g{color:var(--accent)}.mc-val.b{color:var(--blue)}.mc-val.w{color:var(--warn)}.mc-val.r{color:var(--red)}
-.mc-sub{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.3}
-.mc-badge{position:absolute;top:8px;right:8px;font-size:8px;font-weight:700;padding:2px 5px;border-radius:2px;text-transform:uppercase}
+.mc-sub{font-size:9px;color:var(--muted);margin-top:3px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-badge{position:absolute;top:6px;right:6px;font-size:8px;font-weight:700;padding:2px 5px;border-radius:2px;text-transform:uppercase}
 .mcbg{background:rgba(200,241,53,.12);color:var(--accent)}
 
 /* KM TABLE - mobile optimized */
@@ -189,6 +189,47 @@ body{font-family:'Space Grotesk',sans-serif;color:var(--text)}
 .sec-card:nth-child(2){animation-delay:.05s}.sec-card:nth-child(3){animation-delay:.1s}
 .sec-card:nth-child(4){animation-delay:.15s}.sec-card:nth-child(5){animation-delay:.2s}
 .sec-card:nth-child(6){animation-delay:.25s}.sec-card:nth-child(7){animation-delay:.3s}
+
+/* AI SUMMARY CARD */
+.ai-card{
+  background:linear-gradient(135deg,#0d0d1f,#0a0f0a);
+  border:1px solid rgba(200,241,53,.25);border-radius:14px;
+  overflow:hidden;margin-top:0;
+}
+.ai-card-header{
+  padding:14px 16px 12px;
+  background:linear-gradient(90deg,rgba(200,241,53,.06),transparent);
+  border-bottom:1px solid rgba(200,241,53,.12);
+  display:flex;align-items:center;gap:10px;
+}
+.ai-badge{
+  font-family:'Space Mono',monospace;font-size:9px;font-weight:700;
+  letter-spacing:.14em;color:#0a0a0a;background:var(--accent);
+  padding:3px 7px;border-radius:3px;text-transform:uppercase;flex-shrink:0;
+}
+.ai-card-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text2)}
+.ai-card-body{padding:16px}
+.ai-loading{display:flex;align-items:center;gap:12px;padding:8px 0}
+.ai-dots{display:flex;gap:5px}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:.3;animation:aiPulse 1.2s ease infinite}
+.ai-dot:nth-child(2){animation-delay:.2s}.ai-dot:nth-child(3){animation-delay:.4s}
+@keyframes aiPulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+.ai-loading-txt{font-family:'Space Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:.1em}
+.ai-text{font-size:13px;color:var(--text2);line-height:1.75}
+.ai-text p{margin-bottom:10px}
+.ai-text p:last-child{margin-bottom:0}
+.ai-text strong{color:var(--text);font-weight:600}
+.ai-opinion{
+  margin-top:14px;padding:12px 14px;
+  background:rgba(200,241,53,.05);
+  border:1px solid rgba(200,241,53,.15);
+  border-radius:8px;
+}
+.ai-opinion-lbl{font-family:'Space Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
+.ai-opinion-text{font-size:12px;color:var(--text);line-height:1.7;font-style:italic}
+.ai-error{font-size:12px;color:var(--muted);padding:8px 0;line-height:1.6}
+.ai-retry{margin-top:10px;padding:8px 14px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:'Space Grotesk',sans-serif;font-size:12px;cursor:pointer}
+.ai-retry:active{background:var(--surface2)}
 </style>
 </head>
 <body>
@@ -559,14 +600,14 @@ function renderAnalysis(act, streams) {
     <div class="sec-header"><span class="sec-num">01</span><span class="sec-title">Métricas clave</span></div>
     <div class="sec-body">
       <div class="mgrid">
-        <div class="mcard"><div class="mc-lbl">Velocidad pico</div><div class="mc-val b">${maxSpeed}<span style="font-size:11px;color:var(--text2)"> m/s</span></div><div class="mc-sub">≈ ${fmtPace(act.max_speed)}/km</div></div>
-        <div class="mcard"><div class="mc-lbl">Desnivel</div><div class="mc-val w">${act.total_elevation_gain || 0}<span style="font-size:11px;color:var(--text2)"> m</span></div><div class="mc-sub">Acumulado total</div></div>
-        ${avgHr ? `<div class="mcard"><div class="mc-lbl">FC promedio</div><div class="mc-val w">${avgHr}<span style="font-size:11px;color:var(--text2)"> bpm</span></div></div>` : ''}
-        ${maxHr ? `<div class="mcard"><div class="mc-lbl">FC máxima</div><div class="mc-val r">${maxHr}<span style="font-size:11px;color:var(--text2)"> bpm</span></div></div>` : ''}
-        ${avgCad ? `<div class="mcard"><div class="mc-lbl">Cadencia avg</div><div class="mc-val">${avgCad}<span style="font-size:11px;color:var(--text2)"> spm</span></div></div>` : ''}
-        ${avgWatts ? `<div class="mcard"><div class="mc-lbl">Potencia avg</div><div class="mc-val">${avgWatts}<span style="font-size:11px;color:var(--text2)"> W</span></div></div>` : ''}
-        <div class="mcard"><div class="mc-lbl">Calorías</div><div class="mc-val">${act.calories || '--'}<span style="font-size:11px;color:var(--text2)"> kcal</span></div></div>
-        <div class="mcard"><div class="mc-lbl">Mejor esfuerzo</div><div class="mc-val g">${act.achievement_count || 0}<span style="font-size:11px;color:var(--text2)"> logros</span></div></div>
+        <div class="mcard"><div class="mc-lbl">Velocidad pico</div><div class="mc-val b">${maxSpeed}<span style="font-size:10px;color:var(--text2)"> m/s</span></div><div class="mc-sub">≈ ${fmtPace(act.max_speed)}/km</div></div>
+        <div class="mcard"><div class="mc-lbl">Desnivel</div><div class="mc-val w">${act.total_elevation_gain || 0}<span style="font-size:10px;color:var(--text2)"> m</span></div><div class="mc-sub">Acumulado total</div></div>
+        ${avgHr ? `<div class="mcard"><div class="mc-lbl">FC promedio</div><div class="mc-val w">${avgHr}<span style="font-size:10px;color:var(--text2)"> bpm</span></div></div>` : ''}
+        ${maxHr ? `<div class="mcard"><div class="mc-lbl">FC máxima</div><div class="mc-val r">${maxHr}<span style="font-size:10px;color:var(--text2)"> bpm</span></div></div>` : ''}
+        ${avgCad ? `<div class="mcard"><div class="mc-lbl">Cadencia avg</div><div class="mc-val">${avgCad}<span style="font-size:10px;color:var(--text2)"> spm</span></div></div>` : ''}
+        ${avgWatts ? `<div class="mcard"><div class="mc-lbl">Potencia avg</div><div class="mc-val">${avgWatts}<span style="font-size:10px;color:var(--text2)"> W</span></div></div>` : ''}
+        <div class="mcard"><div class="mc-lbl">Calorías</div><div class="mc-val">${act.calories || '--'}<span style="font-size:10px;color:var(--text2)"> kcal</span></div></div>
+        <div class="mcard"><div class="mc-lbl">Mejor esfuerzo</div><div class="mc-val g">${act.achievement_count || 0}<span style="font-size:10px;color:var(--text2)"> logros</span></div></div>
       </div>
     </div>`;
   content.appendChild(sec1);
@@ -773,12 +814,136 @@ function renderAnalysis(act, streams) {
   pad.className = 'bottom-pad';
   content.appendChild(pad);
 
+  // ── AI SUMMARY — fetch after render ──
+  renderAISummary(act, laps, { avgHr, maxHr, avgCad, avgWatts, hasHr, hasCad, hasWatts });
+}
+
   // Animate bars
   setTimeout(() => {
     document.querySelectorAll('.brfill[data-pct]').forEach(el => {
       el.style.width = el.dataset.pct + '%';
     });
   }, 200);
+}
+
+// ═══════════════════════════════════════════════════════
+// AI SUMMARY
+// ═══════════════════════════════════════════════════════
+async function renderAISummary(act, laps, metrics) {
+  const content = $('analysis-content');
+  const pad = content.querySelector('.bottom-pad');
+
+  // Build card
+  const aiCard = document.createElement('div');
+  aiCard.className = 'ai-card';
+  aiCard.id = 'ai-summary-card';
+  aiCard.innerHTML = `
+    <div class="ai-card-header">
+      <span class="ai-badge">IA</span>
+      <span class="ai-card-title">Resumen inteligente</span>
+    </div>
+    <div class="ai-card-body" id="ai-card-body">
+      <div class="ai-loading">
+        <div class="ai-dots">
+          <div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>
+        </div>
+        <span class="ai-loading-txt">Analizando carrera...</span>
+      </div>
+    </div>`;
+
+  // Insert before bottom pad
+  content.insertBefore(aiCard, pad);
+
+  // Build data summary for the prompt
+  const distKm = (act.distance / 1000).toFixed(2);
+  const paceAvg = fmtPace(act.average_speed);
+  const tiempo = fmtTime(act.elapsed_time);
+  const desnivel = act.total_elevation_gain || 0;
+
+  let lapSummary = '';
+  if (laps.length > 0) {
+    lapSummary = laps.map(l =>
+      `km${l.km}: ${l.paceStr}/km${l.avgHr ? ` · ${l.avgHr}bpm` : ''}${l.elevGain > 0 ? ` · +${l.elevGain}m` : ''}`
+    ).join(', ');
+  }
+
+  const hrLine = metrics.avgHr ? `FC promedio ${metrics.avgHr} bpm, FC máxima ${metrics.maxHr} bpm.` : 'Sin datos de FC.';
+  const cadLine = metrics.avgCad ? `Cadencia promedio ${metrics.avgCad} spm.` : '';
+  const wattsLine = metrics.avgWatts ? `Potencia promedio ${metrics.avgWatts}W.` : '';
+
+  const lastKm = laps.length ? laps[laps.length - 1] : null;
+  const firstKm = laps.length ? laps[0] : null;
+  const splitType = lastKm && firstKm
+    ? (lastKm.paceSecs < firstKm.paceSecs ? 'negative split (aceleró al final)' : 'positive split (desaceleró al final)')
+    : 'desconocido';
+
+  const prompt = `Sos un entrenador de running de élite analizando la carrera de un atleta. Basate SOLO en los datos que te doy. Sé directo, técnico y honesto. Escribí en español rioplatense (usá "vos", "corriste", etc). No uses asteriscos ni markdown.
+
+DATOS DE LA CARRERA:
+- Nombre: ${act.name}
+- Distancia: ${distKm} km
+- Tiempo total: ${tiempo}
+- Ritmo promedio: ${paceAvg}/km
+- Desnivel acumulado: ${desnivel}m
+- ${hrLine}
+- ${cadLine}
+- ${wattsLine}
+- Patrón: ${splitType}
+${lapSummary ? `- Detalle por km: ${lapSummary}` : ''}
+
+Tu respuesta debe tener DOS partes:
+
+ANÁLISIS (3-4 oraciones):
+Analizá el ritmo (consistencia, variaciones), el pulso si hay datos (esfuerzo, zonas), el desnivel (impacto en el rendimiento). Mencioná datos concretos.
+
+OPINIÓN DEL ENTRENADOR (2-3 oraciones):
+Dame tu opinión honesta sobre esta carrera. ¿Fue una buena ejecución? ¿Qué hizo bien el atleta? ¿Qué mejoraría para la próxima?
+
+Formato de respuesta — dos bloques separados exactamente así:
+ANALISIS:
+[texto del análisis]
+
+OPINION:
+[texto de la opinión]`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content?.find(b => b.type === 'text')?.text || '';
+
+    // Parse ANALISIS and OPINION blocks
+    const analisisMatch = raw.match(/ANALISIS:\s*([\s\S]*?)(?=OPINION:|$)/i);
+    const opinionMatch = raw.match(/OPINION:\s*([\s\S]*?)$/i);
+
+    const analisis = analisisMatch ? analisisMatch[1].trim() : raw.trim();
+    const opinion = opinionMatch ? opinionMatch[1].trim() : '';
+
+    const bodyEl = $('ai-card-body');
+    bodyEl.innerHTML = `
+      <div class="ai-text">
+        <p>${analisis.replace(/\n/g, '</p><p>')}</p>
+      </div>
+      ${opinion ? `
+      <div class="ai-opinion">
+        <div class="ai-opinion-lbl">Opinión del entrenador</div>
+        <div class="ai-opinion-text">"${opinion.replace(/\n/g, ' ')}"</div>
+      </div>` : ''}`;
+
+  } catch(e) {
+    const bodyEl = $('ai-card-body');
+    bodyEl.innerHTML = `
+      <div class="ai-error">No se pudo generar el análisis automático. Revisá tu conexión.</div>
+      <button class="ai-retry" onclick="renderAISummary(currentActivityData.act, computeKmLaps(currentActivityData.streams), {avgHr:${metrics.avgHr},maxHr:${metrics.maxHr},avgCad:'${metrics.avgCad}',avgWatts:${metrics.avgWatts},hasHr:${metrics.hasHr},hasCad:${metrics.hasCad},hasWatts:${metrics.hasWatts}})">Reintentar</button>`;
+  }
 }
 
 // ═══════════════════════════════════════════════════════
